@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>mazahS</title>
+  <link rel="stylesheet" type="text/css" href="/style.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+  <script type="text/babel">
+    "use strict";
+    
+    const parseJSON = (xhr, feedback, lyrics, GET) => {
+      // parse response 
+      console.log(xhr.response);  
+      const obj = JSON.parse(xhr.response);
+      
+      // give user feedback
+      if(obj.msg){
+        const p = document.createElement('p');
+        p.innerHTML = `Message: ${obj.msg}`;
+        feedback.appendChild(p);
+      }
+      
+      // add song and artist to user's playlist
+      if(obj.track){
+        const playlist = document.querySelector('#playlist');
+        
+        const div = document.createElement('div');
+        const hr = document.createElement('hr');
+        div.innerHTML = `${obj.track.artist} - ${obj.track.song}`;
+      
+        playlist.appendChild(div);
+        playlist.appendChild(hr);
+      }
+      
+      // GET lyrics
+      if(GET && xhr.status != 400){
+        const lyricsContent = document.querySelector('#lyricsContent');
+        lyricsContent.innerHTML = "";
+        
+        let div = document.createElement('div');
+        
+        let strSplit = obj.split("\n");
+        
+        for(let i = 0; i < strSplit.length; i++){
+          //p.innerHTML += '<p>' + strSplit[i] + '</p>';
+          div.innerHTML += '<p>' + strSplit[i] + '</p>';
+        }
+        //div.innerHTML = p.innerHTML;
+        lyricsContent.appendChild(div);
+      }
+    };
+
+    const handleResponse = (xhr, parseResponse) => {
+      const lyrics = document.querySelector('#lyrics');
+      const feedback = document.querySelector('#feedback');
+      // check status code
+      switch(xhr.status){
+          // do NOT parse JSON responses for 304 and HEAD requests
+        case 200:
+          feedback.innerHTML = '<b>Success</b>';
+          // check to see if it's a GET or HEAD before parsing JSON
+          if(parseResponse) parseJSON(xhr, feedback, lyrics, parseResponse);
+          break;
+        case 201:
+          feedback.innerHTML = '<b>Created</b>';
+          parseJSON(xhr, feedback, lyrics, parseResponse);
+          break;
+        case 204:
+          feedback.innerHTML = '<b>Updated (No Content)</b>';
+          // do NOT parse JSON response
+          break;
+        case 304:
+          feedback.innerHTML = '<b>Success (304)</b>';
+          // do NOT parse JSON response
+          break;
+        case 400:
+          feedback.innerHTML = '<b>Bad Request</b>';
+          parseJSON(xhr, feedback, lyrics, parseResponse);
+          break;
+        case 500:
+          // do we NEED this?
+          break;
+        default: // handles 404 errors messages as default
+          feedback.innerHTML = '<b>Resource Not Found</b>';
+          if(parseResponse) parseJSON(xhr, feedback, lyrics, parseResponse);
+          break;
+      }
+    };
+
+    const sendAjax = (e, form) => {
+      const formAction = form.getAttribute('action'); 
+      const formMethod = form.getAttribute('method');
+      
+      const xhr = new XMLHttpRequest();
+      
+      if(formMethod === 'post'){
+        xhr.open(formMethod, formAction);
+      } else {
+        const url = form.querySelector('#field1').value;
+        const method = form.querySelector('#field2').value;
+        xhr.open(method, url);
+      }
+      
+      xhr.onload = handleResponse(xhr, (formMethod === 'get'));
+      xhr.setRequestHeader('Accept', 'application/json');
+      
+      if(formMethod === 'post'){
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        const songName = form.querySelector('#songNameField');
+        const artistName = form.querySelector('artistNameField');
+        const formData = `songName=${songName.value}&artistName=${artistName.value}`;
+        xhr.send(formData);
+      } 
+      else{
+        xhr.send();
+      } 
+      
+      e.preventDefault();
+      return false;
+    }
+    
+     const sendPost = (e, form) => {
+      // grab the forms action (url to go to)
+      // and method (HTTP method - POST)
+      const action = form.getAttribute('action');
+      
+      const method = form.getAttribute('method');
+      
+      // grab the form's name and age fields so we can check user input
+      const songField = form.querySelector('#songField');
+      
+      const artistField = form.querySelector('#artistField');
+      
+      // create a new Ajax request
+      const xhr = new XMLHttpRequest();
+      // set the method (POST) and url (action from the form)
+      xhr.open(method, action);
+      
+      // set our request type to x-www-form-urlencoded
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      // set our requested response type for JSON response
+      xhr.setRequestHeader('Accept', 'application/json');
+      
+      // set our function to handle the response
+      xhr.onload = () => handleResponse(xhr, false);
+      
+      // build our x-www-form-urlencoded format
+      const formData = `song=${songField.value}&artist=${artistField.value}`;
+      
+      // send our request with the data
+      xhr.send(formData);
+      
+      // prevent browser's default to send the form and try to change pages on us
+      e.preventDefault();
+      return false;
+    };
+
+    const sendGet = (e, form) => {
+      const url = form.getAttribute('action');
+      
+      const method = form.querySelector('#methodSelect').value;
+      
+      let songName = form.querySelector('#getSong').value;
+      let artistName = form.querySelector('#getArtist').value;
+      
+      songName = songName.toLowerCase();
+      artistName = artistName.toLowerCase();
+      
+      let params = `song=${songName}&artist=${artistName}`;
+      
+      const xhr = new XMLHttpRequest();
+      
+      xhr.open(method, url+"?"+params);
+      
+      xhr.setRequestHeader('Accept', 'application/json');
+      
+      xhr.onload = () => handleResponse(xhr, (method === 'get'));
+      
+      xhr.send();
+      
+      e.preventDefault();
+      return false;
+    };
+    
+    const init = () => {
+      const postForm = document.querySelector('#postForm');
+      const addSong = (e) => sendPost(e, postForm);
+      postForm.addEventListener('submit', addSong);
+      
+      const getForm = document.querySelector('#getForm');
+      const getSong = (e) => sendGet(e, getForm);
+      getForm.addEventListener('submit', getSong);
+    };
+
+    window.onload = init;
+  </script>
+</head>
+<body>
+  <section id="form">
+    <h1>mazahS</h1>
+    <form id="postForm" action="/addSong" method="post">
+      <label for="song">Song Name: </label>
+      <input id="songField" type="text" name="song" />
+      <label for="artist">Artist: </label>
+      <input id="artistField" type="text" name="artist"/>
+      <input type="submit" value="Add Song" />
+    </form>
+    
+    <form id="getForm" action="/getSong" method="get">
+      <label for="song">Song Name: </label>
+      <input id="getSong" type="text" name="song" />
+      <label for="artist">Artist: </label>
+      <input id="getArtist" type="text" name="artist"/>
+      <select id="methodSelect">
+        <option value="get">GET</option>
+        <option value="head">HEAD</option>
+      </select>
+      <input type="submit" value="Get Lyrics" />
+    </form>
+    <hr>
+    <div id="feedback"></div>
+  </section>
+  <section id="playlist">
+    <h1>My Playlist</h1>
+    <hr>
+  </section>
+  <section id="lyrics">
+    <h1>Lyrics</h1>
+    <hr>
+    <div id="lyricsContent"></div>
+  </section>
+</body>
+</html>
