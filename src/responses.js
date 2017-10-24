@@ -154,23 +154,28 @@ const getSong = (request, response, params) => {
     return;
   }
 
-  if (request.method === 'GET') {
-    if (playlist[artistname].artist === artistname) {
-      let searchSong = false;
-      // loop through songs to check if query parameter's song exists
-      // if it does, search musixmatch's API database
-      // else, return with 400 'bad request' response
-      for (let i = 0; i < playlist[artistname].songs.length; i++) {
-        if (playlist[artistname].songs[i] === songname) {
-          searchSong = true;
-          break;
-        }
+  let searchSong = false;
+  if (playlist[artistname].artist === artistname) {
+    // loop through songs to check if query parameter's song exists
+    // if it does, search musixmatch's API database
+    // else, return with 400 'bad request' response
+    for (let i = 0; i < playlist[artistname].songs.length; i++) {
+      if (playlist[artistname].songs[i] === songname) {
+        searchSong = true;
+        break;
       }
-
-      if (searchSong) searchMusixMatch(songname, artistname, request, response);
-      else respondJSON(request, response, 400, responseJSON);
     }
+  }
+
+  if (request.method === 'GET') {
+    if (searchSong) searchMusixMatch(songname, artistname, request, response);
+    else respondJSON(request, response, 400, responseJSON);
   } else { // assume it's a HEAD
+    if (!searchSong) {
+      respondJSONMeta(request, response, 400);
+      return;
+    }
+
     if (request.headers['if-none-match'] === digest) {
       respondJSONMeta(request, response, 304);
       return;

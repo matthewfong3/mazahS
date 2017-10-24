@@ -77,7 +77,7 @@ const handleResponse = (xhr, parseResponse) => {
       break;
     case 400:
       feedback.innerHTML = '<b>Bad Request</b>';
-      parseJSON(xhr, feedback, lyrics, parseResponse);
+      if(parseResponse) parseJSON(xhr, feedback, lyrics, parseResponse);
       break;
     default: // handles 404 error messages as default
       feedback.innerHTML = '<b>Resource Not Found</b>';
