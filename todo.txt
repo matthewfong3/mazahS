@@ -1,2 +1,0 @@
-500 internal server error? if musixmatch can't find the song even if it's in playlist?
-playlist songs as buttons to get lyrics rather than having to type in a seperate form?

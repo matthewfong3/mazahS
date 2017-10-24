@@ -1,1 +1,2 @@
 background image: http://freshwallpapers.in/walls/notes_in_music_background-HD.jpg
+remove button icon image: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Road-sign-no-entry.svg/1024px-Road-sign-no-entry.svg.png
