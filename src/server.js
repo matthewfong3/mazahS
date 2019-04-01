@@ -48,6 +48,9 @@ const handleGET = (request, response, parsedUrl, params) => {
         case '/images/remove.png':
           htmlHandler.getImage(request, response);
           break;
+        case '/images/bg.jpg':
+          htmlHandler.getBGImage(request, response);
+          break;
         case '/getSong':
           responseHandler.getSong(request, response, params);
           break;

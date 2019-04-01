@@ -9,7 +9,7 @@ html, body {
 }
 
 body {
-  background-image: url("https://brandonstyles.com/wp-content/uploads/2017/06/4166223-music-background-images.gif");
+  background-image: url("/images/bg.jpg");
   background-repeat: no-repeat;
   background-size: cover;
 }

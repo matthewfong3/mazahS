@@ -4,6 +4,7 @@ const index = fs.readFileSync(`${__dirname}/../client/client.html`);
 const css = fs.readFileSync(`${__dirname}/../client/style.css`);
 const js = fs.readFileSync(`${__dirname}/../client/js/client.js`);
 const img = fs.readFileSync(`${__dirname}/../client/images/remove.png`);
+const bgimg = fs.readFileSync(`${__dirname}/../client/images/bg.jpg`);
 
 const getIndex = (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' });
@@ -29,9 +30,16 @@ const getImage = (request, response) => {
   response.end();
 };
 
+const getBGImage = (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'image/png' });
+  response.write(bgimg);
+  response.end();
+};
+
 module.exports = {
   getIndex,
   getCSS,
   getJS,
   getImage,
+  getBGImage,
 };
